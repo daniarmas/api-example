@@ -14,7 +14,7 @@ service AuthenticationService {
 }
 
 service ItemService {
-  rpc ListItem (ListItemRequest) returns (ListItemResponse) {}
+  rpc ListItem (google.protobuf.Empty) returns (ListItemResponse) {}
   rpc GetItem (GetItemRequest) returns (GetItemResponse) {}
 }
 
@@ -33,16 +33,8 @@ message RefreshTokenResponse {
   string authorizationToken = 2;
 }
 
-message ListItemRequest {
-  string nextPage = 1;
-  string businessFk = 2;
-  string itemCategoryFk = 3;
-  google.protobuf.FieldMask fieldMask = 4;
-}
-
 message ListItemResponse {
   repeated Item items = 1;
-  string nextPage = 2;
 }
 
 message GetItemRequest {

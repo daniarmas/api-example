@@ -177,7 +177,7 @@ var AuthenticationService_ServiceDesc = grpc.ServiceDesc{
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ItemServiceClient interface {
-	ListItem(ctx context.Context, in *ListItemRequest, opts ...grpc.CallOption) (*ListItemResponse, error)
+	ListItem(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ListItemResponse, error)
 	GetItem(ctx context.Context, in *GetItemRequest, opts ...grpc.CallOption) (*GetItemResponse, error)
 }
 
@@ -189,7 +189,7 @@ func NewItemServiceClient(cc grpc.ClientConnInterface) ItemServiceClient {
 	return &itemServiceClient{cc}
 }
 
-func (c *itemServiceClient) ListItem(ctx context.Context, in *ListItemRequest, opts ...grpc.CallOption) (*ListItemResponse, error) {
+func (c *itemServiceClient) ListItem(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ListItemResponse, error) {
 	out := new(ListItemResponse)
 	err := c.cc.Invoke(ctx, "/main.ItemService/ListItem", in, out, opts...)
 	if err != nil {
@@ -211,7 +211,7 @@ func (c *itemServiceClient) GetItem(ctx context.Context, in *GetItemRequest, opt
 // All implementations must embed UnimplementedItemServiceServer
 // for forward compatibility
 type ItemServiceServer interface {
-	ListItem(context.Context, *ListItemRequest) (*ListItemResponse, error)
+	ListItem(context.Context, *emptypb.Empty) (*ListItemResponse, error)
 	GetItem(context.Context, *GetItemRequest) (*GetItemResponse, error)
 	mustEmbedUnimplementedItemServiceServer()
 }
@@ -220,7 +220,7 @@ type ItemServiceServer interface {
 type UnimplementedItemServiceServer struct {
 }
 
-func (UnimplementedItemServiceServer) ListItem(context.Context, *ListItemRequest) (*ListItemResponse, error) {
+func (UnimplementedItemServiceServer) ListItem(context.Context, *emptypb.Empty) (*ListItemResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListItem not implemented")
 }
 func (UnimplementedItemServiceServer) GetItem(context.Context, *GetItemRequest) (*GetItemResponse, error) {
@@ -240,7 +240,7 @@ func RegisterItemServiceServer(s grpc.ServiceRegistrar, srv ItemServiceServer) {
 }
 
 func _ItemService_ListItem_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListItemRequest)
+	in := new(emptypb.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -252,7 +252,7 @@ func _ItemService_ListItem_Handler(srv interface{}, ctx context.Context, dec fun
 		FullMethod: "/main.ItemService/ListItem",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ItemServiceServer).ListItem(ctx, req.(*ListItemRequest))
+		return srv.(ItemServiceServer).ListItem(ctx, req.(*emptypb.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }

@@ -26,20 +26,19 @@ func main() {
 		log.Fatalf("Error connecting to database: %v", err)
 		return
 	}
+	// Register all services
+	dao := repository.NewDAO(db, config)
+	itemService := usecase.NewItemService(dao)
+	authenticationService := usecase.NewAuthenticationService(dao)
 	// Seed data
 	result := db.Unscoped().Limit(1).Find(&models.User{})
 	if result.RowsAffected == 0 {
-		for _, seed := range seeds.All() {
+		for _, seed := range seeds.All(&dao) {
 			if err := seed.Run(db); err != nil {
 				log.Fatalf("Running seed '%s', failed with error: %s", seed.Name, err)
 			}
 		}
 	}
-	// Register all services
-	dao := repository.NewDAO(db, config)
-	itemService := usecase.NewItemService(dao)
-	authenticationService := usecase.NewAuthenticationService(dao)
-
 	// Starting gRPC server
 	address := fmt.Sprintf("0.0.0.0:%s", config.ApiPort)
 	listener, err := net.Listen("tcp", address)

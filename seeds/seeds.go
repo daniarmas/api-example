@@ -1,22 +1,25 @@
 package seeds
 
 import (
+	"github.com/daniarmas/api-example/repository"
 	"github.com/daniarmas/api-example/seed"
 	"gorm.io/gorm"
 )
 
-func All() []seed.Seed {
+func All(dao *repository.DAO) []seed.Seed {
 	return []seed.Seed{
 		{
 			Name: "CreateJane",
 			Run: func(db *gorm.DB) error {
-				return CreateUser(db, "prueba1@correo.cup")
+				passwordHash, _ := (*dao).NewHashPasswordQuery().HashPassword("password")
+				return CreateUser(db, "prueba1@correo.cup", passwordHash)
 			},
 		},
 		{
 			Name: "CreateJohn",
 			Run: func(db *gorm.DB) error {
-				return CreateUser(db, "prueba2@correo.cup")
+				passwordHash, _ := (*dao).NewHashPasswordQuery().HashPassword("password")
+				return CreateUser(db, "prueba2@correo.cup", passwordHash)
 			},
 		},
 		{

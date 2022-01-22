@@ -1,0 +1,30 @@
+# GraphQL schema example
+#
+# https://gqlgen.com/getting-starte
+type Query {
+  items(id: String!): [Item]!
+
+  # type Mutation {
+}
+
+type User {
+  id: String
+  email: String
+  createTime: String
+  updateTime: String
+}
+
+type Item {
+  id: String
+  name: String
+  price: Float
+  highQualityPhoto: String
+  highQualityPhotoBlurHash: String
+  lowQualityPhoto: String
+  lowQualityPhotoBlurHash: String
+  thumbnail: String
+  thumbnailBlurHash: String
+  createTime: String
+  updateTime: String
+  cursor: Int
+}

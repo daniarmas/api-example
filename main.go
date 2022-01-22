@@ -4,8 +4,13 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"net/http"
 
+	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/daniarmas/api-example/app"
+	"github.com/daniarmas/api-example/graph"
+	"github.com/daniarmas/api-example/graph/generated"
 	"github.com/daniarmas/api-example/models"
 	pb "github.com/daniarmas/api-example/pkg"
 	"github.com/daniarmas/api-example/repository"
@@ -39,8 +44,16 @@ func main() {
 			}
 		}
 	}
+	// Starting graphQL server
+	go func() {
+		srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{ItemService: itemService}}))
+		http.Handle("/", playground.Handler("GraphQL playground", "/query"))
+		http.Handle("/query", srv)
+		log.Printf("connect to http://localhost:%s/ for GraphQL playground", config.GraphqlApiPort)
+		log.Fatal(http.ListenAndServe(":"+config.GraphqlApiPort, nil))
+	}()
 	// Starting gRPC server
-	address := fmt.Sprintf("0.0.0.0:%s", config.ApiPort)
+	address := fmt.Sprintf("0.0.0.0:%s", config.GrpcApiPort)
 	listener, err := net.Listen("tcp", address)
 	if err != nil {
 		log.Fatalln(err)

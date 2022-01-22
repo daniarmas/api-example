@@ -1,0 +1,88 @@
+syntax = "proto3";
+
+package main;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/field_mask.proto";
+
+option go_package = "/pkg";
+
+service AuthenticationService {
+  rpc SignIn (SignInRequest) returns (SignInResponse) {}
+  rpc SignOut (SignOutRequest) returns (google.protobuf.Empty) {}
+  rpc RefreshToken (RefreshTokenRequest) returns (RefreshTokenResponse) {}
+}
+
+service ItemService {
+  rpc ListItem (ListItemRequest) returns (ListItemResponse) {}
+  rpc GetItem (GetItemRequest) returns (GetItemResponse) {}
+}
+
+message SignOutRequest {
+  bool all = 1;
+  string authorizationTokenFk = 2;
+}
+ 
+message RefreshTokenRequest {
+  string refreshToken = 1;
+  google.protobuf.FieldMask fieldMask = 2;
+}
+
+message RefreshTokenResponse {
+  string refreshToken = 1;
+  string authorizationToken = 2;
+}
+
+message ListItemRequest {
+  string nextPage = 1;
+  string businessFk = 2;
+  string itemCategoryFk = 3;
+  google.protobuf.FieldMask fieldMask = 4;
+}
+
+message ListItemResponse {
+  repeated Item items = 1;
+  string nextPage = 2;
+}
+
+message GetItemRequest {
+  string id = 1;
+  google.protobuf.FieldMask fieldMask = 3;
+}
+
+message GetItemResponse {
+  Item item = 1;
+}
+
+message SignInRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message SignInResponse {
+  string refreshToken = 1;
+  string authorizationToken = 2;
+  User user = 3;
+}
+
+message User {
+  string id = 1;
+  string email = 2;
+  string createTime = 3;
+  string updateTime = 4;
+}
+
+message Item {
+  string id = 1;
+  string name = 2;
+  double price = 4;
+  string highQualityPhoto = 5;
+  string highQualityPhotoBlurHash = 6;
+  string lowQualityPhoto = 7;
+  string lowQualityPhotoBlurHash = 8;
+  string thumbnail = 9;
+  string thumbnailBlurHash = 10;
+  string createTime = 11;
+  string updateTime = 12;
+  int32 cursor = 13;
+}

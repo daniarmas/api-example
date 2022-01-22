@@ -2,13 +2,12 @@ package app
 
 import (
 	"context"
-
-	"github.com/daniarmas/api-example/dto"
 	pb "github.com/daniarmas/api-example/pkg"
+	gp "google.golang.org/protobuf/types/known/emptypb"
 )
 
-func (m *ItemServer) ListItem(ctx context.Context, req *pb.ListItemRequest) (*pb.ListItemResponse, error) {
-	items, err := m.itemService.ListItem(&dto.ListItemRequest{BusinessFk: req.BusinessFk, BusinessItemCategoryFk: req.ItemCategoryFk, NextPage: req.NextPage})
+func (m *ItemServer) ListItem(ctx context.Context, req *gp.Empty) (*pb.ListItemResponse, error) {
+	items, err := m.itemService.ListItem()
 	if err != nil {
 		return nil, err
 	}

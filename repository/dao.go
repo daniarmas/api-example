@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/daniarmas/api-example/models"
 	"github.com/daniarmas/api-example/utils"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -61,6 +62,7 @@ func NewDB(config *utils.Config) (*gorm.DB, error) {
 		SkipDefaultTransaction: true,
 		Logger:                 newLogger,
 	})
+	DB.AutoMigrate(&models.User{}, &models.Item{}, &models.RefreshToken{}, &models.AuthorizationToken{})
 	if err != nil {
 		return nil, err
 	}

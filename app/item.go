@@ -46,5 +46,8 @@ func (m *ItemServer) GetItem(ctx context.Context, req *pb.GetItemRequest) (*pb.G
 		LowQualityPhotoBlurHash:  item.LowQualityPhotoBlurHash,
 		Thumbnail:                item.Thumbnail,
 		ThumbnailBlurHash:        item.ThumbnailBlurHash,
+		CreateTime:               item.CreateTime.String(),
+		UpdateTime:               item.CreateTime.String(),
+		Cursor:                   int32(item.Cursor),
 	}}, nil
 }

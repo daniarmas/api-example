@@ -15,9 +15,9 @@ func (User) TableName() string {
 
 type User struct {
 	ID                       uuid.UUID      `gorm:"type:uuid;default:uuid_generate_v4()"`
-	Email                    string         `gorm:"column:email"`
-	CreateTime               time.Time      `gorm:"column:create_time"`
-	UpdateTime               time.Time      `gorm:"column:update_time"`
+	Email                    string         `gorm:"column:email;not null"`
+	CreateTime               time.Time      `gorm:"column:create_time;not null"`
+	UpdateTime               time.Time      `gorm:"column:update_time;not null"`
 	DeleteTime               gorm.DeletedAt `gorm:"index;column:delete_time"`
 }
 

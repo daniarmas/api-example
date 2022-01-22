@@ -6,8 +6,10 @@ import (
 	"net"
 
 	"github.com/daniarmas/api-example/app"
+	"github.com/daniarmas/api-example/models"
 	pb "github.com/daniarmas/api-example/pkg"
 	"github.com/daniarmas/api-example/repository"
+	"github.com/daniarmas/api-example/seeds"
 	"github.com/daniarmas/api-example/usecase"
 	"google.golang.org/grpc"
 )
@@ -23,6 +25,15 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error connecting to database: %v", err)
 		return
+	}
+	// Seed data
+	result := db.Unscoped().Limit(1).Find(&models.User{})
+	if result.RowsAffected == 0 {
+		for _, seed := range seeds.All() {
+			if err := seed.Run(db); err != nil {
+				log.Fatalf("Running seed '%s', failed with error: %s", seed.Name, err)
+			}
+		}
 	}
 	// Register all services
 	dao := repository.NewDAO(db, config)

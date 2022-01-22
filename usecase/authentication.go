@@ -38,6 +38,10 @@ func (v *authenticationService) SignIn(signInRequest *dto.SignInRequest, metadat
 		} else if *userRes == (models.User{}) {
 			return errors.New("user not found")
 		}
+		password := v.dao.NewHashPasswordQuery().CheckPasswordHash(signInRequest.Password, userRes.Password)
+		if !password {
+			return errors.New("password incorrect")
+		}
 		deleteRefreshTokenRes, deleteRefreshTokenErr := v.dao.NewRefreshTokenQuery().DeleteRefreshToken(tx, &models.RefreshToken{UserFk: userRes.ID}, &[]string{"id"})
 		if deleteRefreshTokenErr != nil {
 			return deleteRefreshTokenErr

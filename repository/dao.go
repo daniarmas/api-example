@@ -19,6 +19,7 @@ type DAO interface {
 	NewRefreshTokenQuery() RefreshTokenQuery
 	NewAuthorizationTokenQuery() AuthorizationTokenQuery
 	NewTokenQuery() TokenQuery
+	NewHashPasswordQuery() HashPasswordQuery
 }
 
 type dao struct{}
@@ -87,4 +88,8 @@ func (d *dao) NewAuthorizationTokenQuery() AuthorizationTokenQuery {
 
 func (d *dao) NewTokenQuery() TokenQuery {
 	return &tokenQuery{}
+}
+
+func (d *dao) NewHashPasswordQuery() HashPasswordQuery {
+	return &hashPasswordQuery{}
 }

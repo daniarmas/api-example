@@ -19,12 +19,14 @@ func (m *AuthenticationServer) SignIn(ctx context.Context, req *pb.SignInRequest
 		switch err.Error() {
 		case "user not found":
 			st = status.New(codes.NotFound, "User not found")
+		case "password incorrect":
+			st = status.New(codes.PermissionDenied, "Credentials incorrect")
 		default:
 			st = status.New(codes.Internal, "Internal server error")
 		}
 		return nil, st.Err()
 	}
-	return &pb.SignInResponse{RefreshToken: result.RefreshToken, AuthorizationToken: result.AuthorizationToken, User: &pb.User{Id: result.User.ID.String(), Email: result.User.Email}}, nil
+	return &pb.SignInResponse{RefreshToken: result.RefreshToken, AuthorizationToken: result.AuthorizationToken, User: &pb.User{Id: result.User.ID.String(), Email: result.User.Email, CreateTime: result.User.CreateTime.String(), UpdateTime: result.User.UpdateTime.String()}}, nil
 }
 
 func (m *AuthenticationServer) SignOut(ctx context.Context, req *pb.SignOutRequest) (*gp.Empty, error) {

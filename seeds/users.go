@@ -5,6 +5,6 @@ import (
 	"gorm.io/gorm"
 )
 
-func CreateUser(db *gorm.DB, email string) error {
-	return db.Create(&models.User{Email: email}).Error
+func CreateUser(db *gorm.DB, email string, password string) error {
+	return db.Create(&models.User{Email: email, Password: password}).Error
 }

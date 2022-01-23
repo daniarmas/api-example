@@ -25,7 +25,7 @@ COPY --from=build /api-example /app/api-example
 ## This configurations are only used for local development, the package github.com/spf13/viper override the app.env env vars by the docker container env vars... 
 COPY --from=build ./app/app.env /app/
 
-EXPOSE 22210
+EXPOSE 22210 8888
 
 USER nonroot:nonroot
 

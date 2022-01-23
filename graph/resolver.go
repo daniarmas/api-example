@@ -7,5 +7,6 @@ import "github.com/daniarmas/api-example/usecase"
 // It serves as dependency injection for your app, add any dependencies you require here.
 
 type Resolver struct {
-	ItemService usecase.ItemService
+	ItemService           usecase.ItemService
+	AuthenticationService usecase.AuthenticationService
 }

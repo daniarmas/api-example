@@ -1,10 +1,20 @@
-# GraphQL schema example
-#
-# https://gqlgen.com/getting-starte
 type Query {
   items(id: String!): [Item]!
+}
 
-  # type Mutation {
+type Mutation {
+  signIn(email: String!, password: String!): SignInResponse!
+}
+
+input SignOutRequest {
+  all: Boolean
+  authorizationTokenFk: String
+}
+
+type SignInResponse {
+  refreshToken: String!
+  authorizationToken: String!
+  user: User!
 }
 
 type User {

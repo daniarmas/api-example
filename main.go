@@ -8,7 +8,7 @@ import (
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
-	"github.com/daniarmas/api-example/app"
+	"github.com/daniarmas/api-example/grpc"
 	"github.com/daniarmas/api-example/graph"
 	"github.com/daniarmas/api-example/graph/generated"
 	"github.com/daniarmas/api-example/models"
@@ -16,6 +16,8 @@ import (
 	"github.com/daniarmas/api-example/repository"
 	"github.com/daniarmas/api-example/seeds"
 	"github.com/daniarmas/api-example/usecase"
+	"github.com/go-chi/chi"
+
 	"google.golang.org/grpc"
 )
 
@@ -46,11 +48,15 @@ func main() {
 	}
 	// Starting graphQL server
 	go func() {
-		srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{ItemService: itemService}}))
-		http.Handle("/", playground.Handler("GraphQL playground", "/query"))
-		http.Handle("/query", srv)
-		log.Printf("connect to http://localhost:%s/ for GraphQL playground", config.GraphqlApiPort)
-		log.Fatal(http.ListenAndServe(":"+config.GraphqlApiPort, nil))
+		router := chi.NewRouter()
+		srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{ItemService: itemService, AuthenticationService: authenticationService}}))
+		router.Handle("/", playground.Handler("GraphQL playground", "/query"))
+		router.Handle("/query", srv)
+		graphqlPort := fmt.Sprintf(":%s", config.GraphqlApiPort)
+		err := http.ListenAndServe(graphqlPort, router)
+		if err != nil {
+			panic(err)
+		}
 	}()
 	// Starting gRPC server
 	address := fmt.Sprintf("0.0.0.0:%s", config.GrpcApiPort)

@@ -17,6 +17,17 @@ type Item struct {
 	Cursor                   *int     `json:"cursor"`
 }
 
+type SignInResponse struct {
+	RefreshToken       string `json:"refreshToken"`
+	AuthorizationToken string `json:"authorizationToken"`
+	User               *User  `json:"user"`
+}
+
+type SignOutRequest struct {
+	All                  *bool   `json:"all"`
+	AuthorizationTokenFk *string `json:"authorizationTokenFk"`
+}
+
 type User struct {
 	ID         *string `json:"id"`
 	Email      *string `json:"email"`

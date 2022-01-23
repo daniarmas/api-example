@@ -22,7 +22,7 @@ type DAO interface {
 	NewHashPasswordQuery() HashPasswordQuery
 }
 
-type dao struct{}
+type Dao struct{}
 
 var DB *gorm.DB
 var Config *utils.Config
@@ -30,7 +30,7 @@ var Config *utils.Config
 func NewDAO(db *gorm.DB, config *utils.Config) DAO {
 	DB = db
 	Config = config
-	return &dao{}
+	return &Dao{}
 }
 
 func NewConfig() (*utils.Config, error) {
@@ -70,26 +70,26 @@ func NewDB(config *utils.Config) (*gorm.DB, error) {
 	return DB, nil
 }
 
-func (d *dao) NewItemQuery() ItemQuery {
+func (d *Dao) NewItemQuery() ItemQuery {
 	return &itemQuery{}
 }
 
-func (d *dao) NewUserQuery() UserQuery {
+func (d *Dao) NewUserQuery() UserQuery {
 	return &userQuery{}
 }
 
-func (d *dao) NewRefreshTokenQuery() RefreshTokenQuery {
+func (d *Dao) NewRefreshTokenQuery() RefreshTokenQuery {
 	return &refreshTokenQuery{}
 }
 
-func (d *dao) NewAuthorizationTokenQuery() AuthorizationTokenQuery {
+func (d *Dao) NewAuthorizationTokenQuery() AuthorizationTokenQuery {
 	return &authorizationTokenQuery{}
 }
 
-func (d *dao) NewTokenQuery() TokenQuery {
+func (d *Dao) NewTokenQuery() TokenQuery {
 	return &tokenQuery{}
 }
 
-func (d *dao) NewHashPasswordQuery() HashPasswordQuery {
+func (d *Dao) NewHashPasswordQuery() HashPasswordQuery {
 	return &hashPasswordQuery{}
 }

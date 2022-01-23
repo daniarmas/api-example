@@ -8,7 +8,8 @@ type Config struct {
 	DBDatabase            string `mapstructure:"DB_DATABASE"`
 	DBPort                string `mapstructure:"DB_PORT"`
 	DBHost                string `mapstructure:"DB_HOST"`
-	ApiPort               string `mapstructure:"API_PORT"`
+	GrpcApiPort           string `mapstructure:"GRPC_API_PORT"`
+	GraphqlApiPort        string `mapstructure:"GRAPHQL_API_PORT"`
 	PrometheusPushgateway string `mapstructure:"PROMETHEUS_PUSHGATEWAY"`
 	JwtSecret             string `mapstructure:"JWT_SECRET"`
 }

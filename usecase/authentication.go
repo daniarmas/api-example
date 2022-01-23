@@ -6,15 +6,15 @@ import (
 	"github.com/daniarmas/api-example/dto"
 	"github.com/daniarmas/api-example/models"
 	"github.com/daniarmas/api-example/repository"
+	"github.com/daniarmas/api-example/utils"
 	"github.com/google/uuid"
-	"google.golang.org/grpc/metadata"
 	"gorm.io/gorm"
 )
 
 type AuthenticationService interface {
-	SignIn(signInRequest *dto.SignInRequest, metadata *metadata.MD) (*dto.SignInResponse, error)
-	SignOut(all *bool, authorizationTokenFk *string, metadata *metadata.MD) error
-	RefreshToken(refreshToken *string, metadata *metadata.MD) (*dto.RefreshToken, error)
+	SignIn(signInRequest *dto.SignInRequest) (*dto.SignInResponse, error)
+	SignOut(metadata *utils.Metadata) error
+	RefreshToken(refreshToken *string, metadata *utils.Metadata) (*dto.RefreshToken, error)
 }
 
 type authenticationService struct {
@@ -25,7 +25,7 @@ func NewAuthenticationService(dao repository.DAO) AuthenticationService {
 	return &authenticationService{dao: dao}
 }
 
-func (v *authenticationService) SignIn(signInRequest *dto.SignInRequest, metadata *metadata.MD) (*dto.SignInResponse, error) {
+func (v *authenticationService) SignIn(signInRequest *dto.SignInRequest) (*dto.SignInResponse, error) {
 	var userRes *models.User
 	var userErr, refreshTokenErr, authorizationTokenErr, jwtRefreshTokenErr, jwtAuthorizationTokenErr error
 	var refreshTokenRes *models.RefreshToken
@@ -78,106 +78,36 @@ func (v *authenticationService) SignIn(signInRequest *dto.SignInRequest, metadat
 	return &dto.SignInResponse{AuthorizationToken: *jwtAuthorizationTokenRes, RefreshToken: *jwtRefreshTokenRes, User: *userRes}, nil
 }
 
-func (v *authenticationService) SignOut(all *bool, authorizationTokenFk *string, metadata *metadata.MD) error {
+func (v *authenticationService) SignOut(metadata *utils.Metadata) error {
 	err := repository.DB.Transaction(func(tx *gorm.DB) error {
-		if *all {
-			authorizationTokenParseRes, authorizationTokenParseErr := v.dao.NewTokenQuery().ParseJwtAuthorizationToken(&metadata.Get("authorization")[0])
-			if authorizationTokenParseErr != nil {
-				switch authorizationTokenParseErr.Error() {
-				case "Token is expired":
-					return errors.New("authorizationtoken expired")
-				case "signature is invalid":
-					return errors.New("signature is invalid")
-				case "token contains an invalid number of segments":
-					return errors.New("token contains an invalid number of segments")
-				default:
-					return authorizationTokenParseErr
-				}
+		authorizationTokenParseRes, authorizationTokenParseErr := v.dao.NewTokenQuery().ParseJwtAuthorizationToken(&metadata.Authorization)
+		if authorizationTokenParseErr != nil {
+			switch authorizationTokenParseErr.Error() {
+			case "Token is expired":
+				return errors.New("authorizationtoken expired")
+			case "signature is invalid":
+				return errors.New("signature is invalid")
+			case "token contains an invalid number of segments":
+				return errors.New("token contains an invalid number of segments")
+			default:
+				return authorizationTokenParseErr
 			}
-			authorizationTokenRes, authorizationTokenErr := v.dao.NewAuthorizationTokenQuery().GetAuthorizationToken(tx, &models.AuthorizationToken{ID: uuid.MustParse(*authorizationTokenParseRes)}, &[]string{"id", "user_fk"})
-			if authorizationTokenErr != nil {
-				return authorizationTokenErr
-			} else if *authorizationTokenRes == (models.AuthorizationToken{}) {
-				return errors.New("unauthenticated")
-			}
-			var refreshTokenIds []string
-			deleteRefreshTokenRes, deleteRefreshTokenErr := v.dao.NewRefreshTokenQuery().DeleteRefreshToken(tx, &models.RefreshToken{UserFk: authorizationTokenRes.UserFk}, &[]string{"id"})
-			if deleteRefreshTokenErr != nil {
-				return deleteRefreshTokenErr
-			}
-			for _, e := range *deleteRefreshTokenRes {
-				refreshTokenIds = append(refreshTokenIds, e.ID.String())
-			}
-			_, deleteAuthorizationTokenErr := v.dao.NewAuthorizationTokenQuery().DeleteAuthorizationTokenIn(tx, "refresh_token_fk IN ?", &refreshTokenIds)
-			if deleteAuthorizationTokenErr != nil {
-				return deleteAuthorizationTokenErr
-			}
-			return nil
-		} else if *authorizationTokenFk != "" {
-			authorizationTokenParseRes, authorizationTokenParseErr := v.dao.NewTokenQuery().ParseJwtAuthorizationToken(&metadata.Get("authorization")[0])
-			if authorizationTokenParseErr != nil {
-				switch authorizationTokenParseErr.Error() {
-				case "Token is expired":
-					return errors.New("authorizationtoken expired")
-				case "signature is invalid":
-					return errors.New("signature is invalid")
-				case "token contains an invalid number of segments":
-					return errors.New("token contains an invalid number of segments")
-				default:
-					return authorizationTokenParseErr
-				}
-			}
-			authorizationTokenByReqRes, authorizationTokenByReqErr := v.dao.NewAuthorizationTokenQuery().GetAuthorizationToken(tx, &models.AuthorizationToken{ID: uuid.MustParse(*authorizationTokenFk)}, &[]string{"id", "user_fk", "device_fk"})
-			if authorizationTokenByReqErr != nil {
-				return authorizationTokenByReqErr
-			}
-			authorizationTokenRes, authorizationTokenErr := v.dao.NewAuthorizationTokenQuery().GetAuthorizationToken(tx, &models.AuthorizationToken{ID: uuid.MustParse(*authorizationTokenParseRes)}, &[]string{"id", "user_fk"})
-			if authorizationTokenErr != nil {
-				return authorizationTokenErr
-			} else if *authorizationTokenRes == (models.AuthorizationToken{}) {
-				return errors.New("unauthenticated")
-			} else if authorizationTokenRes.UserFk != authorizationTokenByReqRes.UserFk {
-				return errors.New("permission denied")
-			}
-			deleteRefreshTokenRes, deleteRefreshTokenErr := v.dao.NewRefreshTokenQuery().DeleteRefreshToken(tx, &models.RefreshToken{UserFk: authorizationTokenByReqRes.UserFk}, &[]string{"id"})
-			if deleteRefreshTokenErr != nil {
-				return deleteRefreshTokenErr
-			}
-			_, deleteAuthorizationTokenErr := v.dao.NewAuthorizationTokenQuery().DeleteAuthorizationToken(tx, &models.AuthorizationToken{RefreshTokenFk: (*deleteRefreshTokenRes)[0].ID})
-			if deleteAuthorizationTokenErr != nil {
-				return deleteAuthorizationTokenErr
-			}
-			return nil
-		} else {
-			authorizationTokenParseRes, authorizationTokenParseErr := v.dao.NewTokenQuery().ParseJwtAuthorizationToken(&metadata.Get("authorization")[0])
-			if authorizationTokenParseErr != nil {
-				switch authorizationTokenParseErr.Error() {
-				case "Token is expired":
-					return errors.New("authorizationtoken expired")
-				case "signature is invalid":
-					return errors.New("signature is invalid")
-				case "token contains an invalid number of segments":
-					return errors.New("token contains an invalid number of segments")
-				default:
-					return authorizationTokenParseErr
-				}
-			}
-			authorizationTokenRes, authorizationTokenErr := v.dao.NewAuthorizationTokenQuery().GetAuthorizationToken(tx, &models.AuthorizationToken{ID: uuid.MustParse(*authorizationTokenParseRes)}, &[]string{"id", "user_fk", "device_fk"})
-			if authorizationTokenErr != nil {
-				return authorizationTokenErr
-			} else if *authorizationTokenRes == (models.AuthorizationToken{}) {
-				return errors.New("unauthenticated")
-			}
-			deleteRefreshTokenRes, deleteRefreshTokenErr := v.dao.NewRefreshTokenQuery().DeleteRefreshToken(tx, &models.RefreshToken{UserFk: authorizationTokenRes.UserFk}, &[]string{"id"})
-			if deleteRefreshTokenErr != nil {
-				return deleteRefreshTokenErr
-			}
-			_, deleteAuthorizationTokenErr := v.dao.NewAuthorizationTokenQuery().DeleteAuthorizationToken(tx, &models.AuthorizationToken{RefreshTokenFk: (*deleteRefreshTokenRes)[0].ID})
-			if deleteAuthorizationTokenErr != nil {
-				return deleteAuthorizationTokenErr
-			}
-			return nil
 		}
+		authorizationTokenRes, authorizationTokenErr := v.dao.NewAuthorizationTokenQuery().GetAuthorizationToken(tx, &models.AuthorizationToken{ID: uuid.MustParse(*authorizationTokenParseRes)}, &[]string{"id", "user_fk"})
+		if authorizationTokenErr != nil {
+			return authorizationTokenErr
+		} else if *authorizationTokenRes == (models.AuthorizationToken{}) {
+			return errors.New("unauthenticated")
+		}
+		deleteRefreshTokenRes, deleteRefreshTokenErr := v.dao.NewRefreshTokenQuery().DeleteRefreshToken(tx, &models.RefreshToken{UserFk: authorizationTokenRes.UserFk}, &[]string{"id"})
+		if deleteRefreshTokenErr != nil {
+			return deleteRefreshTokenErr
+		}
+		_, deleteAuthorizationTokenErr := v.dao.NewAuthorizationTokenQuery().DeleteAuthorizationToken(tx, &models.AuthorizationToken{RefreshTokenFk: (*deleteRefreshTokenRes)[0].ID})
+		if deleteAuthorizationTokenErr != nil {
+			return deleteAuthorizationTokenErr
+		}
+		return nil
 	})
 	if err != nil {
 		return err
@@ -185,7 +115,7 @@ func (v *authenticationService) SignOut(all *bool, authorizationTokenFk *string,
 	return nil
 }
 
-func (v *authenticationService) RefreshToken(refreshToken *string, metadata *metadata.MD) (*dto.RefreshToken, error) {
+func (v *authenticationService) RefreshToken(refreshToken *string, metadata *utils.Metadata) (*dto.RefreshToken, error) {
 	var jwtAuthorizationTokenRes, jwtRefreshTokenRes *string
 	var jwtAuthorizationTokenErr, jwtRefreshTokenErr error
 	err := repository.DB.Transaction(func(tx *gorm.DB) error {

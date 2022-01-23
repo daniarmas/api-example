@@ -9,18 +9,13 @@ option go_package = "/pkg";
 
 service AuthenticationService {
   rpc SignIn (SignInRequest) returns (SignInResponse) {}
-  rpc SignOut (SignOutRequest) returns (google.protobuf.Empty) {}
+  rpc SignOut (google.protobuf.Empty) returns (google.protobuf.Empty) {}
   rpc RefreshToken (RefreshTokenRequest) returns (RefreshTokenResponse) {}
 }
 
 service ItemService {
   rpc ListItem (google.protobuf.Empty) returns (ListItemResponse) {}
   rpc GetItem (GetItemRequest) returns (GetItemResponse) {}
-}
-
-message SignOutRequest {
-  bool all = 1;
-  string authorizationTokenFk = 2;
 }
  
 message RefreshTokenRequest {

@@ -2,7 +2,7 @@ version: "3.7"
 
 services:
   api-example:
-    image: danielarmasjuarez/api-example:v0.1.0
+    image: danielarmasjuarez/api-example:v0.1.1
     container_name: api
     ports:
       - 22210:22210
@@ -14,7 +14,7 @@ services:
       DB_DATABASE: postgres
       DB_PORT: 26257             
       DB_HOST: cockroach               
-      API_PORT: 22210
+      GRPC_API_PORT: 22210
       GRAPHQL_API_PORT: 8888
       PROMETHEUS_PUSHGATEWAY: http://localhost:9091/
       JWT_SECRET: O8pzXjp4QMk4cAD60dHeoOnxdVsDc9

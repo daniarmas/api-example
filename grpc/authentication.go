@@ -5,6 +5,7 @@ import (
 
 	"github.com/daniarmas/api-example/dto"
 	pb "github.com/daniarmas/api-example/pkg"
+	"github.com/daniarmas/api-example/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
@@ -13,24 +14,39 @@ import (
 
 func (m *AuthenticationServer) SignIn(ctx context.Context, req *pb.SignInRequest) (*pb.SignInResponse, error) {
 	var st *status.Status
-	md, _ := metadata.FromIncomingContext(ctx)
-	result, err := m.authenticationService.SignIn(&dto.SignInRequest{Password: req.Password, Email: req.Email}, &md)
+	result, err := m.authenticationService.SignIn(&dto.SignInRequest{Password: req.Password, Email: req.Email})
 	if err != nil {
 		switch err.Error() {
 		case "user not found":
 			st = status.New(codes.NotFound, "User not found")
+		case "password incorrect":
+			st = status.New(codes.PermissionDenied, "Credentials incorrect")
 		default:
 			st = status.New(codes.Internal, "Internal server error")
 		}
 		return nil, st.Err()
 	}
-	return &pb.SignInResponse{RefreshToken: result.RefreshToken, AuthorizationToken: result.AuthorizationToken, User: &pb.User{Id: result.User.ID.String(), Email: result.User.Email}}, nil
+	return &pb.SignInResponse{RefreshToken: result.RefreshToken, AuthorizationToken: result.AuthorizationToken, User: &pb.User{Id: result.User.ID.String(), Email: result.User.Email, CreateTime: result.User.CreateTime.String(), UpdateTime: result.User.UpdateTime.String()}}, nil
 }
 
-func (m *AuthenticationServer) SignOut(ctx context.Context, req *pb.SignOutRequest) (*gp.Empty, error) {
+func (m *AuthenticationServer) SignOut(ctx context.Context, req *gp.Empty) (*gp.Empty, error) {
 	var st *status.Status
 	md, _ := metadata.FromIncomingContext(ctx)
-	err := m.authenticationService.SignOut(&req.All, &req.AuthorizationTokenFk, &md)
+	metadata := utils.Metadata{
+		Authorization:            md.Get("authorization")[0],
+		Platform:                 md.Get("platform")[0],
+		SystemVersion:            md.Get("systemversion")[0],
+		SystemLanguage:           md.Get("systemlanguage")[0],
+		NetworkType:              md.Get("networktype")[0],
+		AppVersion:               md.Get("appversion")[0],
+		App:                      md.Get("app")[0],
+		DeviceId:                 md.Get("deviceid")[0],
+		Ipv4:                     md.Get("ipv4")[0],
+		Ipv6:                     md.Get("ipv6")[0],
+		Model:                    md.Get("model")[0],
+		FirebaseCloudMessagingId: md.Get("firebasecloudmessagingid")[0],
+	}
+	err := m.authenticationService.SignOut(&metadata)
 	if err != nil {
 		switch err.Error() {
 		case "unauthenticated":
@@ -56,7 +72,21 @@ func (m *AuthenticationServer) SignOut(ctx context.Context, req *pb.SignOutReque
 func (m *AuthenticationServer) RefreshToken(ctx context.Context, req *pb.RefreshTokenRequest) (*pb.RefreshTokenResponse, error) {
 	var st *status.Status
 	md, _ := metadata.FromIncomingContext(ctx)
-	result, err := m.authenticationService.RefreshToken(&req.RefreshToken, &md)
+	metadata := utils.Metadata{
+		Authorization:            md.Get("authorization")[0],
+		Platform:                 md.Get("platform")[0],
+		SystemVersion:            md.Get("systemversion")[0],
+		SystemLanguage:           md.Get("systemlanguage")[0],
+		NetworkType:              md.Get("networktype")[0],
+		AppVersion:               md.Get("appversion")[0],
+		App:                      md.Get("app")[0],
+		DeviceId:                 md.Get("deviceid")[0],
+		Ipv4:                     md.Get("ipv4")[0],
+		Ipv6:                     md.Get("ipv6")[0],
+		Model:                    md.Get("model")[0],
+		FirebaseCloudMessagingId: md.Get("firebasecloudmessagingid")[0],
+	}
+	result, err := m.authenticationService.RefreshToken(&req.RefreshToken, &metadata)
 	if err != nil {
 		switch err.Error() {
 		case "unauthenticated":

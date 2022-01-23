@@ -1,7 +1,6 @@
 package usecase
 
 import (
-	"github.com/daniarmas/api-example/dto"
 	"github.com/daniarmas/api-example/models"
 	"github.com/daniarmas/api-example/repository"
 	"gorm.io/gorm"
@@ -9,7 +8,7 @@ import (
 
 type ItemService interface {
 	GetItem(id string) (*models.Item, error)
-	ListItem(itemRequest *dto.ListItemRequest) (*[]models.Item, error)
+	ListItem() (*[]models.Item, error)
 }
 
 type itemService struct {
@@ -20,7 +19,7 @@ func NewItemService(dao repository.DAO) ItemService {
 	return &itemService{dao: dao}
 }
 
-func (i *itemService) ListItem(itemRequest *dto.ListItemRequest) (*[]models.Item, error) {
+func (i *itemService) ListItem() (*[]models.Item, error) {
 	var items []models.Item
 	var itemsErr error
 	err := repository.DB.Transaction(func(tx *gorm.DB) error {

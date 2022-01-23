@@ -1,0 +1,40 @@
+type Query {
+  items(id: String!): [Item]!
+}
+
+type Mutation {
+  signIn(email: String!, password: String!): SignInResponse!
+}
+
+input SignOutRequest {
+  all: Boolean
+  authorizationTokenFk: String
+}
+
+type SignInResponse {
+  refreshToken: String!
+  authorizationToken: String!
+  user: User!
+}
+
+type User {
+  id: String
+  email: String
+  createTime: String
+  updateTime: String
+}
+
+type Item {
+  id: String
+  name: String
+  price: Float
+  highQualityPhoto: String
+  highQualityPhotoBlurHash: String
+  lowQualityPhoto: String
+  lowQualityPhotoBlurHash: String
+  thumbnail: String
+  thumbnailBlurHash: String
+  createTime: String
+  updateTime: String
+  cursor: Int
+}

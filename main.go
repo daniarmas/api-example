@@ -8,9 +8,9 @@ import (
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
-	"github.com/daniarmas/api-example/grpc"
 	"github.com/daniarmas/api-example/graph"
 	"github.com/daniarmas/api-example/graph/generated"
+	"github.com/daniarmas/api-example/grpc"
 	"github.com/daniarmas/api-example/models"
 	pb "github.com/daniarmas/api-example/pkg"
 	"github.com/daniarmas/api-example/repository"
